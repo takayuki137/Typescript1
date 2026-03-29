@@ -3,12 +3,14 @@ import { prisma } from "@/lib/prisma";
 export default async function Home() {
   try {
     // テスト用にDBに仮のデータを追加
-    await prisma.user.create({
-      data: {
-        email: "test@example.com",
-        name: "Taro",
-      },
-    });
+    await prisma.user.upsert({
+  where: { email: "test@example.com" },
+  update: { name: "test" },
+  create: {
+    email: "test@example.com",
+    name: "test"
+  }
+})
 
     const users = await prisma.user.findMany();
 
