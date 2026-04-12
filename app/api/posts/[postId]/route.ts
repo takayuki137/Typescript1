@@ -33,7 +33,7 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params:Promise< { postId: string }> }
 ) {
   const { postId } = await params;
   const id = Number(postId);
