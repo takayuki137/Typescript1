@@ -13,10 +13,15 @@ model User {
   passwordHash  String   @map("password_hash")
   role          String
   createdAt     DateTime @default(now()) @map("created_at")
-
+  role      Role    @default(USER)
   posts         Post[]
   likes         Like[]
   comments      Comment[]
+}
+
+enum Role {
+  ADMIN
+  USER
 }
 
 model Post {

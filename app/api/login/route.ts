@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers"
 
 type LoginRequestBody = {
   email?: string;
@@ -39,6 +40,10 @@ export async function POST(request: Request) {
         { status: 401 },
       );
     }
+
+    const cookieStore = await cookies()
+
+    cookieStore.set("email", email)
 
     return NextResponse.json({ ok: true });
   } catch (error) {

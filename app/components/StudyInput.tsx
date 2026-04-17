@@ -15,18 +15,37 @@ type PostComment = {
   authorName: string;
 };
 
+type User = {
+  id: number
+  email: string
+  role: string
+}
+
 export default function StudyBoard() {
 
+
+  const [user, setUser] = useState<User | null>(null)
+
   const fetchLogs = async () => {
-  const res = await fetch("/api/posts");
-  const data = (await res.json()) as StudyLog[];
-  setLogs(data);
+    const res = await fetch("/api/posts");
+    const data = (await res.json()) as StudyLog[];
+    setLogs(data);
   };
 
   useEffect(() => {
- 
+
     fetchLogs();
+
+    const fetchUser = async () => {
+      const res = await fetch("/api/me")
+      const data = await res.json()
+      setUser(data)
+    }
+
+    fetchUser()
   }, []);
+
+
 
   const [memo, setMemo] = useState("");
   const [postTitle, setPostTitle] = useState("");
@@ -70,24 +89,24 @@ export default function StudyBoard() {
 
     setEditingPostId(postId);
     setEditingContent(target.content);
-  }; 
+  };
 
   const cancelEdit = () => {
     setEditingPostId(null);
     setEditingContent("");
   };
 
-  const saveEdit =async () => {
+  const saveEdit = async () => {
     if (editingPostId == null) return;
     const next = editingContent.trim();
     if (!next) return;
 
     const res = await fetch(`/api/posts/${editingPostId}`, {
-    method: "PATCH", // or PUT
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ content: next }),
+      method: "PATCH", // or PUT
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content: next }),
     });
 
     const updated = await res.json();
@@ -99,7 +118,15 @@ export default function StudyBoard() {
   };
 
 
+
+
   const deletePost = async (postId: number) => {
+
+
+    if (!user || user.role !== "ADMIN") {
+      alert("権限がありません");
+      return;
+    }
     const ok = window.confirm("この投稿を本当に削除しますか？");
     if (!ok) return;
 
@@ -127,33 +154,37 @@ export default function StudyBoard() {
     if (editingPostId === postId) cancelEdit();
   };
 
-const addLog = async () => {
-  const res = await fetch("/api/posts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      title: postTitle,
-      content: memo,
-      userId: 1,
-    }),
-  });
-  await fetchLogs();
-  if (res.ok) {
-  setPostTitle("");
-  setMemo("");
-}
-  //const newLog = await res.json();
+  const addLog = async () => {
+    const res = await fetch("/api/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: postTitle,
+        content: memo,
+        userId: 1,
+      }),
+    });
+    await fetchLogs();
+    if (res.ok) {
+      setPostTitle("");
+      setMemo("");
+    }
+    //const newLog = await res.json();
 
-  //setLogs((prev) => [...prev, newLog]); // ←即反映
-};
+    //setLogs((prev) => [...prev, newLog]); // ←即反映
+  };
 
-  
 
-  
+
+
 
   return (
+
     <div className="p-6 max-w-xl mx-auto">
       {/* 入力カード */}
+      <p>ID: {user?.id}</p>
+      <p>Email: {user?.email}</p>
+      <p>Role: {user?.role}</p>
       <div className="bg-white shadow rounded-lg p-4 mb-4">
         <input
           placeholder="タイトルを入力..."
@@ -173,7 +204,7 @@ const addLog = async () => {
           <button
             onClick={addLog}
             className="bg-blue-500 text-white px-3 py-1 rounded"
-            
+
           >
             保存
           </button>
@@ -231,12 +262,12 @@ const addLog = async () => {
                     >
                       編集
                     </button>
-                    <button
+                    {user?.role == "ADMIN" && (<button
                       onClick={() => deletePost(log.id)}
                       className="rounded bg-red-600 px-3 py-1 text-sm text-white"
                     >
                       削除
-                    </button>
+                    </button>)}
                   </div>
                 </>
               )}
