@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 type StudyLog = {
-  id: number;
+  id: string;
   title: string;
   content: string;
 
@@ -23,39 +24,20 @@ type User = {
 
 export default function StudyBoard() {
 
-
-  const [user, setUser] = useState<User | null>(null)
-
-  const fetchLogs = async () => {
-    const res = await fetch("/api/posts");
-    const data = (await res.json()) as StudyLog[];
-    setLogs(data);
-  };
-
   useEffect(() => {
-
     fetchLogs();
-
-    const fetchUser = async () => {
-      const res = await fetch("/api/me")
-      const data = await res.json()
-      setUser(data)
-    }
-
-    fetchUser()
   }, []);
 
-
-
-  const [memo, setMemo] = useState("");
+  const [user, setUser] = useState<User | null>(null)
   const [postTitle, setPostTitle] = useState("");
+  const [content, setContent] = useState("");
   const [logs, setLogs] = useState<StudyLog[]>([]);
   const [likedPostIds, setLikedPostIds] = useState<number[]>([]);
   const [commentsByPostId, setCommentsByPostId] = useState<
     Record<number, PostComment[]>
   >({});
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
-  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
 
   const toggleLike = (postId: number) => {
@@ -64,6 +46,19 @@ export default function StudyBoard() {
         ? prev.filter((id) => id !== postId)
         : [...prev, postId],
     );
+  };
+  const fetchLogs = async () => {
+    console.log("getdata");
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setLogs(data || []);
   };
 
   const submitComment = (postId: number) => {
@@ -83,7 +78,7 @@ export default function StudyBoard() {
     setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
   };
 
-  const startEdit = (postId: number) => {
+  const startEdit = (postId: string) => {
     const target = logs.find((l) => l.id === postId);
     if (!target) return;
 
@@ -100,79 +95,67 @@ export default function StudyBoard() {
     if (editingPostId == null) return;
     const next = editingContent.trim();
     if (!next) return;
+    const { error } = await supabase
+      .from("posts")
+      .update({ content: next })
+      .eq("id", editingPostId);
 
-    const res = await fetch(`/api/posts/${editingPostId}`, {
-      method: "PATCH", // or PUT
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ content: next }),
-    });
-
-    const updated = await res.json();
+    if (error) {
+      console.error(error);
+      alert("更新失敗");
+      return;
+    }
 
     setLogs((prev) =>
-      prev.map((l) => (l.id === editingPostId ? updated : l)),
+      prev.map((l) =>
+        l.id === editingPostId ? { ...l, content: next } : l
+      )
     );
     cancelEdit();
   };
 
+  const deletePost = async (postId: string) => {
 
 
-
-  const deletePost = async (postId: number) => {
-
-
-    if (!user || user.role !== "ADMIN") {
-      alert("権限がありません");
-      return;
-    }
     const ok = window.confirm("この投稿を本当に削除しますか？");
     if (!ok) return;
 
-    const res = await fetch(`/api/posts/${postId}`, {
-      method: "DELETE",
-    });
 
-    if (!res.ok) {
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", postId);
+
+    if (error) {
+      console.error(error);
       alert("削除失敗");
       return;
     }
-
-    setLogs((prev) => prev.filter((l) => l.id !== postId));
-    setLikedPostIds((prev) => prev.filter((id) => id !== postId));
-    setCommentsByPostId((prev) => {
-      const next = { ...prev };
-      delete next[postId];
-      return next;
-    });
-    setCommentInputs((prev) => {
-      const next = { ...prev };
-      delete next[postId];
-      return next;
-    });
-    if (editingPostId === postId) cancelEdit();
   };
 
   const addLog = async () => {
-    const res = await fetch("/api/posts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: postTitle,
-        content: memo,
-        userId: 1,
-      }),
-    });
-    await fetchLogs();
-    if (res.ok) {
-      setPostTitle("");
-      setMemo("");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert("ログインしてください");
+      return;
     }
-    //const newLog = await res.json();
 
-    //setLogs((prev) => [...prev, newLog]); // ←即反映
-  };
+    const { error } = await supabase.from("posts").insert([
+      {
+        title: postTitle,
+        content: content,
+        user_id: user.id, // ← 超重要
+      }
+    ]);
+
+    if (error) {
+      console.error(error);
+      alert("投稿失敗");
+      return;
+    }
+
+    alert("投稿成功！");
+  }
 
 
 
@@ -180,7 +163,17 @@ export default function StudyBoard() {
 
   return (
 
+
     <div className="p-6 max-w-xl mx-auto">
+      <div>
+        <h1>投稿一覧</h1>
+        {logs.map((post) => (
+          <div key={post.id}>
+            <h2>{post.title}</h2>
+            <p>{post.content}</p>
+          </div>
+        ))}
+      </div>
       {/* 入力カード */}
       <p>ID: {user?.id}</p>
       <p>Email: {user?.email}</p>
@@ -194,8 +187,8 @@ export default function StudyBoard() {
         />
         <textarea
           placeholder="学習内容を入力.."
-          value={memo}
-          onChange={(e) => setMemo(e.target.value)}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
           className="w-full resize-none outline-none"
           rows={3}
         />
@@ -210,6 +203,7 @@ export default function StudyBoard() {
           </button>
         </div>
       </div>
+
 
       {/* ログ一覧 */}
       <div className="space-y-3">
