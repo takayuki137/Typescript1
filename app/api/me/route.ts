@@ -9,9 +9,6 @@ export async function GET() {
     return new Response("未ログイン", { status: 401 })
   }
 
-  /*const user = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true, email: true, role: true }
-  })*/
+
 
 }

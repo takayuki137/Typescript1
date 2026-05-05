@@ -37,7 +37,6 @@ export async function DELETE(
   } catch (error: any) {
 
     // 💥 ここが最重要！ターミナルにエラーの詳細を出す
-    console.error("Prisma削除エラー詳細:", error.code, error.message);
     return NextResponse.json(
       { error: "削除失敗" },
       { status: 500 }

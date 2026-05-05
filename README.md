@@ -44,6 +44,7 @@ markdown## サービス概要
 - ORM: Prisma
 - DB: PostgreSQL (Render)
 - Deploy: Render
+→renderDBが無料枠の期限切れのため、supabaseへとDBを移行しました。
 
 ## 今後の課題
 - [ ] 検索・フィルター機能
