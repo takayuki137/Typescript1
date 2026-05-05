@@ -2,11 +2,13 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase"; // ←追加
 
 type LoginFormValues = {
   email: string;
-  password: string;
+  password: string; 
 };
+
 
 export default function LoginForm() {
   const router = useRouter();
@@ -26,16 +28,18 @@ export default function LoginForm() {
     }
     setIsSubmitting(true);
     setMessage("");
+
+
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+      //  Supabaseログイン
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
       });
 
-      const result = (await response.json()) as { message?: string };
-      if (!response.ok) {
-        setMessage(result.message ?? "ログインに失敗しました。");
+      if (error) {
+        console.log("送信データ:", values);
+        setMessage("ログインに失敗しました。");
         return;
       }
 
@@ -89,6 +93,7 @@ export default function LoginForm() {
         disabled={!values.email || !values.password || isSubmitting}
       >
         {isSubmitting ? "送信中..." : "ログイン"}
+        
       </button>
 
       {message ? <p className="text-sm">{message}</p> : null}

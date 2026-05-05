@@ -1,5 +1,4 @@
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { supabase } from '@/lib/supabase'
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers"
 
@@ -8,11 +7,14 @@ type LoginRequestBody = {
   password?: string;
 };
 
+
 export async function POST(request: Request) {
   try {
+
     const body = (await request.json()) as LoginRequestBody;
     const email = body.email?.trim().toLowerCase();
     const password = body.password;
+    console.log("受け取った値:", { email, password });
 
     if (!email || !password) {
       return NextResponse.json(
@@ -21,20 +23,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true, passwordHash: true },
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    console.log("supabase result:", data);
+    console.log("supabase error:", error);
 
-    if (!user) {
-      return NextResponse.json(
-        { message: "ログイン情報が正しくありません。" },
-        { status: 401 },
-      );
-    }
-
-    const passwordMatched = await bcrypt.compare(password, user.passwordHash);
-    if (!passwordMatched) {
+    if (error || !data.user) {
       return NextResponse.json(
         { message: "ログイン情報が正しくありません。" },
         { status: 401 },

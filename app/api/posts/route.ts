@@ -1,15 +1,16 @@
-import { prisma } from "@/lib/prisma"
+
 export async function GET() {
+  return Response.json({ message: "ok" })
   //return Response.json({ message: "Hello API" })
   
-    const posts = await prisma.post.findMany({
+    /*const posts = await prisma.post.findMany({
     orderBy: { createdAt: "desc" }
     })
 
   return Response.json(posts)
-}
+}*/
 
-export async function POST(req: Request) {
+/*export async function POST(req: Request) {
   const { content, userId,title } = await req.json()
   
 
@@ -23,5 +24,5 @@ export async function POST(req: Request) {
   })
   
   return Response.json(post, { status: 201 })
-  
+  */
 }

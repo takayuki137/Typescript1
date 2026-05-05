@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma"
+
 import { cookies } from "next/headers"
 
 export async function GET() {
@@ -9,10 +9,9 @@ export async function GET() {
     return new Response("未ログイン", { status: 401 })
   }
 
-  const user = await prisma.user.findUnique({
+  /*const user = await prisma.user.findUnique({
     where: { email },
     select: { id: true, email: true, role: true }
-  })
+  })*/
 
-  return Response.json(user)
 }
