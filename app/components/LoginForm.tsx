@@ -42,6 +42,7 @@ export default function LoginForm() {
         setMessage("ログインに失敗しました。");
         return;
       }
+      await supabase.auth.getSession(); // ← 追加
 
       router.push("/study");
     } catch (error) {

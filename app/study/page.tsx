@@ -1,3 +1,4 @@
+"use client";
 import StudyInput from "@/app/components/StudyInput";
 
 export default function StudyPage() {
