@@ -37,6 +37,7 @@ export default function StudyBoard() {
   const [qTitle, setQTitle] = useState("");
   const [qContent, setQContent] = useState("");
   const [questions, setQuestions] = useState<any[]>([]);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
 
   // ─── 関数定義（useEffectより全部上） ───────────────────────
 
@@ -204,6 +205,7 @@ export default function StudyBoard() {
     setQTitle("");
     setQContent("");
     fetchQuestions();
+    setIsQuestionModalOpen(false);
   };
 
   // ─── useEffect ───────────────────────────────────────────────
@@ -331,6 +333,69 @@ export default function StudyBoard() {
           </div>
         ))}
       </div>
+
+      {/* 右下固定の質問ボタン */}
+      <button
+        onClick={() => setIsQuestionModalOpen(true)}
+        className="fixed bottom-6 right-6 z-40 rounded-full bg-blue-600 px-5 py-3 font-bold text-white shadow-lg transition hover:bg-blue-700"
+      >
+        質問する
+      </button>
+
+      {/* 質問モーダル */}
+      {isQuestionModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-2xl rounded-lg bg-white p-5 shadow-xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-lg font-bold">質問一覧と投稿</h2>
+              <button
+                onClick={() => setIsQuestionModalOpen(false)}
+                className="rounded bg-gray-500 px-3 py-1 text-sm text-white hover:bg-gray-600"
+              >
+                閉じる
+              </button>
+            </div>
+
+            <div className="rounded bg-blue-50 p-4">
+              <h3 className="mb-2 font-bold">質問を投稿</h3>
+              <input
+                className="mb-2 w-full rounded border p-2"
+                placeholder="質問タイトル"
+                value={qTitle}
+                onChange={(e) => setQTitle(e.target.value)}
+              />
+              <textarea
+                className="mb-2 w-full rounded border p-2"
+                placeholder="質問内容"
+                value={qContent}
+                onChange={(e) => setQContent(e.target.value)}
+              />
+              <div className="flex justify-end">
+                <button
+                  onClick={addQuestion}
+                  className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  投稿する
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 max-h-80 overflow-y-auto rounded bg-green-50 p-4">
+              <h3 className="mb-2 font-bold">質問一覧</h3>
+              {questions.length === 0 ? (
+                <p className="text-sm text-gray-600">まだ質問はありません。</p>
+              ) : (
+                questions.map((q) => (
+                  <div key={q.id} className="mb-2 rounded bg-green-100 p-3">
+                    <p className="font-bold">{q.title}</p>
+                    <p>{q.content}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
