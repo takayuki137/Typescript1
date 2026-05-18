@@ -101,7 +101,7 @@ export default function Questions() {
           onClick={addQuestion}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
-          質問募集中
+          投稿
         </button>
       </div>{" "}
       <h2 className="font-bold mb-2">質問一覧</h2>

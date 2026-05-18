@@ -294,28 +294,7 @@ export default function StudyBoard() {
 
   return (
     <div className="p-6 max-w-xl mx-auto">
-      {/* 質問フォーム */}
-      <div className="bg-blue-100 p-4 mt-6 rounded">
-        <h2 className="font-bold mb-2">質問する</h2>
-        <input
-          className="border p-2 w-full mb-2"
-          placeholder="質問タイトル"
-          value={qTitle}
-          onChange={(e) => setQTitle(e.target.value)}
-        />
-        <textarea
-          className="border p-2 w-full mb-2"
-          placeholder="質問内容"
-          value={qContent}
-          onChange={(e) => setQContent(e.target.value)}
-        />
-        <button
-          onClick={addQuestion}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          質問する
-        </button>
-      </div>
+
 
       {/* 投稿フォーム */}
       <div className="bg-white shadow rounded-lg p-4 mb-4 mt-4">
