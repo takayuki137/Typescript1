@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 type StudyLog = {
@@ -21,29 +22,43 @@ type User = {
 };
 
 export default function StudyBoard() {
-
-
   const [logs, setLogs] = useState<StudyLog[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [postTitle, setPostTitle] = useState("");
   const [content, setContent] = useState("");
   const [likedPosts, setLikedPosts] = useState<string[]>([]);
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
-  const [commentsByPostId, setCommentsByPostId] = useState<Record<number, PostComment[]>>({});
-  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+  const [commentsByPostId, setCommentsByPostId] = useState<
+    Record<number, PostComment[]>
+  >({});
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
+    {},
+  );
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [replies, setReplies] = useState<Record<string, any[]>>({});
   const [qTitle, setQTitle] = useState("");
   const [qContent, setQContent] = useState("");
   const [questions, setQuestions] = useState<any[]>([]);
-  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
+
+  const togglePostExpand = (postId: string) => {
+    setExpandedPostIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(postId)) next.delete(postId);
+      else next.add(postId);
+      return next;
+    });
+  };
 
   // ─── 関数定義（useEffectより全部上） ───────────────────────
 
   const fetchLogs = async () => {
     const { data, error } = await supabase.from("posts").select("*");
-    if (error) { console.error(error); return; }
+    if (error) {
+      console.error(error);
+      return;
+    }
     setLogs(data || []);
   };
 
@@ -52,7 +67,10 @@ export default function StudyBoard() {
       .from("questions")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) { console.error(error); return; }
+    if (error) {
+      console.error(error);
+      return;
+    }
     setQuestions(data || []);
   };
 
@@ -85,7 +103,10 @@ export default function StudyBoard() {
       .select("*")
       .eq("question_id", questionId)
       .order("created_at", { ascending: true });
-    if (error) { console.error(error); return; }
+    if (error) {
+      console.error(error);
+      return;
+    }
     return data;
   };
 
@@ -96,6 +117,24 @@ export default function StudyBoard() {
       newReplies[log.id] = data || [];
     }
     setReplies(newReplies);
+    const repliesMap: Record<string, any[]> = {};
+
+    for (const q of questions) {
+      const data = await fetchReplies(q.id);
+      repliesMap[q.id] = data || [];
+    }
+
+    setReplies(repliesMap);
+  };
+  const loadReplieLists = async () => {
+    const repliesMap: Record<string, any[]> = {};
+
+    for (const q of questions) {
+      const data = await fetchReplies(q.id);
+      repliesMap[q.id] = data || [];
+    }
+
+    setReplies(repliesMap);
   };
 
   const getUser = async () => {
@@ -103,13 +142,11 @@ export default function StudyBoard() {
     console.log("EMAIL:", data?.user?.email);
     console.log("ID:", data?.user?.id);
 
-    const { data: userData } = await supabase.auth.getUser();
-    console.log("UID:", userData.user?.id);
+    console.log("UID:", data?.user?.id);
 
-    const { data:isAdmin } = await supabase.rpc("is_admin");
-    console.log("isAdmin:",isAdmin);
+    const { data: isAdmin } = await supabase.rpc("is_admin");
+    
     if (data?.user) {
-      const { data: isAdmin } = await supabase.rpc("is_admin");
       console.log("isAdmin:", isAdmin);
       setUser({
         id: data.user.id,
@@ -117,6 +154,7 @@ export default function StudyBoard() {
         role: data.user.role ?? "",
       });
     }
+    console.log("ROLE:", data.user?.role);
   };
 
   const toggleLike = async (postId: string) => {
@@ -125,7 +163,11 @@ export default function StudyBoard() {
     if (!userId) return;
 
     if (likedPosts.includes(postId)) {
-      await supabase.from("likes").delete().eq("post_id", postId).eq("user_id", userId);
+      await supabase
+        .from("likes")
+        .delete()
+        .eq("post_id", postId)
+        .eq("user_id", userId);
       setLikedPosts((prev) => prev.filter((id) => id !== postId));
     } else {
       await supabase.from("likes").insert({ post_id: postId, user_id: userId });
@@ -155,10 +197,14 @@ export default function StudyBoard() {
       .update({ content: next })
       .eq("id", editingPostId);
 
-    if (error) { console.error(error); alert("更新失敗"); return; }
+    if (error) {
+      console.error(error);
+      alert("更新失敗");
+      return;
+    }
 
     setLogs((prev) =>
-      prev.map((l) => (l.id === editingPostId ? { ...l, content: next } : l))
+      prev.map((l) => (l.id === editingPostId ? { ...l, content: next } : l)),
     );
     cancelEdit();
   };
@@ -168,22 +214,37 @@ export default function StudyBoard() {
     if (!ok) return;
 
     const { error } = await supabase.from("posts").delete().eq("id", postId);
-    if (error) { console.error(error); alert("削除失敗"); return; }
+    if (error) {
+      console.error(error);
+      alert("削除失敗");
+      return;
+    }
 
     setLogs((prev) => prev.filter((l) => l.id !== postId));
   };
 
   const addLog = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { alert("ログインしてください"); return; }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      alert("ログインしてください");
+      return;
+    }
 
-    const { error } = await supabase.from("posts").insert([{
-      title: postTitle,
-      content: content,
-      user_id: user.id,
-    }]);
+    const { error } = await supabase.from("posts").insert([
+      {
+        title: postTitle,
+        content: content,
+        user_id: user.id,
+      },
+    ]);
 
-    if (error) { console.error(error); alert("投稿失敗"); return; }
+    if (error) {
+      console.error(error);
+      alert("投稿失敗");
+      return;
+    }
     alert("投稿成功！");
     setPostTitle("");
     setContent("");
@@ -191,7 +252,9 @@ export default function StudyBoard() {
   };
 
   const addQuestion = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     const { error } = await supabase.from("questions").insert({
@@ -200,12 +263,15 @@ export default function StudyBoard() {
       user_id: user.id,
     });
 
-    if (error) { console.error(error); alert("質問投稿失敗"); return; }
+    if (error) {
+      console.error(error);
+      alert("質問投稿失敗");
+      return;
+    }
     alert("質問投稿成功！");
     setQTitle("");
     setQContent("");
     fetchQuestions();
-    setIsQuestionModalOpen(false);
   };
 
   // ─── useEffect ───────────────────────────────────────────────
@@ -219,7 +285,6 @@ export default function StudyBoard() {
   }, []);
 
   useEffect(() => {
-
     if (logs.length > 0) {
       loadReplies(logs);
     }
@@ -229,7 +294,6 @@ export default function StudyBoard() {
 
   return (
     <div className="p-6 max-w-xl mx-auto">
-
       {/* 質問フォーム */}
       <div className="bg-blue-100 p-4 mt-6 rounded">
         <h2 className="font-bold mb-2">質問する</h2>
@@ -281,9 +345,11 @@ export default function StudyBoard() {
       {/* ログ一覧 */}
       <div className="space-y-3">
         {logs.map((log) => (
-          <div key={log.id} className="bg-yellow-100 p-4 rounded-lg shadow">
+          <div key={log.id} className=" bg-yellow-100 p-4 rounded-lg shadow">
             {replies[log.id]?.map((r) => (
-              <p key={r.id}>{r.content}</p>
+              <p key={r.id} className="text-red-500 text-4xl">
+                {r.content}
+              </p>
             ))}
             {editingPostId === log.id ? (
               <div className="flex flex-col gap-2">
@@ -294,19 +360,59 @@ export default function StudyBoard() {
                   rows={3}
                 />
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} className="rounded bg-green-600 px-3 py-1 text-sm text-white">更新</button>
-                  <button onClick={cancelEdit} className="rounded bg-gray-500 px-3 py-1 text-sm text-white">キャンセル</button>
-                  <button onClick={() => deletePost(log.id)} className="rounded bg-red-600 px-3 py-1 text-sm text-white">削除</button>
+                  <button
+                    onClick={saveEdit}
+                    className="rounded bg-green-600 px-3 py-1 text-sm text-white"
+                  >
+                    更新
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    className="rounded bg-gray-500 px-3 py-1 text-sm text-white"
+                  >
+                    キャンセル
+                  </button>
+                  <button
+                    onClick={() => deletePost(log.id)}
+                    className="rounded bg-red-600 px-3 py-1 text-sm text-white"
+                  >
+                    削除
+                  </button>
                 </div>
               </div>
             ) : (
               <>
                 <p className="font-bold text-base mb-1">{log.title}</p>
-                <p className="whitespace-pre-wrap">{log.content}</p>
+                <p
+                  className={`whitespace-pre-wrap ${
+                    expandedPostIds.has(log.id)
+                      ? ""
+                      : "line-clamp-3 overflow-hidden"
+                  }`}
+                >
+                  {log.content}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => togglePostExpand(log.id)}
+                  className="mt-1 text-sm text-blue-600 hover:underline"
+                >
+                  {expandedPostIds.has(log.id) ? "閉じる" : "続きを見る"}
+                </button>
                 <div className="mt-2 flex gap-2">
-                  <button onClick={() => startEdit(log.id)} className="rounded bg-gray-700 px-3 py-1 text-sm text-white">編集</button>
+                  <button
+                    onClick={() => startEdit(log.id)}
+                    className="rounded bg-gray-700 px-3 py-1 text-sm text-white"
+                  >
+                    編集
+                  </button>
                   {user?.role === "ADMIN" && (
-                    <button onClick={() => deletePost(log.id)} className="rounded bg-red-600 px-3 py-1 text-sm text-white">削除</button>
+                    <button
+                      onClick={() => deletePost(log.id)}
+                      className="rounded bg-red-600 px-3 py-1 text-sm text-white"
+                    >
+                      削除
+                    </button>
                   )}
                 </div>
               </>
@@ -328,74 +434,21 @@ export default function StudyBoard() {
         <h2 className="font-bold mb-2">質問一覧</h2>
         {questions.map((q) => (
           <div key={q.id} className="bg-green-100 p-3 rounded mb-2">
-            <p className="font-bold">{q.title}</p>
             <p>{q.content}</p>
+            {replies[q.id]?.map((reply) => (
+              <p key={reply.id}>{reply.content}</p>
+            ))}
           </div>
         ))}
       </div>
 
       {/* 右下固定の質問ボタン */}
-      <button
-        onClick={() => setIsQuestionModalOpen(true)}
-        className="fixed bottom-6 right-6 z-40 rounded-full bg-blue-600 px-5 py-3 font-bold text-white shadow-lg transition hover:bg-blue-700"
+      <Link
+        href="/questions"
+        className="fixed bottom-6 right-6 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 font-bold text-white shadow-lg transition hover:bg-blue-700"
       >
         質問する
-      </button>
-
-      {/* 質問モーダル */}
-      {isQuestionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-2xl rounded-lg bg-white p-5 shadow-xl">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-bold">質問一覧と投稿</h2>
-              <button
-                onClick={() => setIsQuestionModalOpen(false)}
-                className="rounded bg-gray-500 px-3 py-1 text-sm text-white hover:bg-gray-600"
-              >
-                閉じる
-              </button>
-            </div>
-
-            <div className="rounded bg-blue-50 p-4">
-              <h3 className="mb-2 font-bold">質問を投稿</h3>
-              <input
-                className="mb-2 w-full rounded border p-2"
-                placeholder="質問タイトル"
-                value={qTitle}
-                onChange={(e) => setQTitle(e.target.value)}
-              />
-              <textarea
-                className="mb-2 w-full rounded border p-2"
-                placeholder="質問内容"
-                value={qContent}
-                onChange={(e) => setQContent(e.target.value)}
-              />
-              <div className="flex justify-end">
-                <button
-                  onClick={addQuestion}
-                  className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                >
-                  投稿する
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-4 max-h-80 overflow-y-auto rounded bg-green-50 p-4">
-              <h3 className="mb-2 font-bold">質問一覧</h3>
-              {questions.length === 0 ? (
-                <p className="text-sm text-gray-600">まだ質問はありません。</p>
-              ) : (
-                questions.map((q) => (
-                  <div key={q.id} className="mb-2 rounded bg-green-100 p-3">
-                    <p className="font-bold">{q.title}</p>
-                    <p>{q.content}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      </Link>
     </div>
   );
 }

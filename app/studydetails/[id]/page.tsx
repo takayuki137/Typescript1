@@ -1,47 +1,45 @@
-"use client";
+/*"use client";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useParams } from "next/navigation";
 
-export default function QuestionDetail() {
+export default function StudyLogDetail() {
   const params = useParams();
   const id = params.id as string;
 
-  const [question, setQuestion] = useState<any>(null);
-  const [replies, setReplyList] = useState<any[]>([]);
-  const [replyContent, setReplyInput] = useState("");
+  const [detail, setDetail] = useState<any>(null);
+  const [replies, setReplies] = useState<any[]>([]);
+  const [replyContent, setReplyContent] = useState("");
 
-  const fetchQuestion = async () => {
+  const fetchDetail = async () => {
     const { data } = await supabase
-      .from("questions")
+      .from("posts")
       .select("*")
       .eq("id", id)
       .single();
 
-    setQuestion(data);
+    setDetail(data);
   };
 
-  const fetchReplyList = async () => {
+  const fetchReplies = async () => {
     const { data } = await supabase
       .from("question_replies")
       .select("*")
       .eq("question_id", id)
       .order("created_at", { ascending: true });
 
-    setReplyList(data || []);
+    setReplies(data || []);
   };
 
   useEffect(() => {
     if (!id) return; // ← これ重要
     fetchQuestion();
-    fetchReplyList();
+    fetchReplies();
   }, [id]); // ← params.idじゃなくて id
 
   const handleReply = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     await supabase.from("question_replies").insert({
@@ -50,22 +48,27 @@ export default function QuestionDetail() {
       user_id: user.id,
     });
 
-    setReplyInput("");
-    fetchReplyList();
+    setReplyContent("");
+    fetchReplies();
   };
 
   return (
     <div>
-      {replies.map((reply) => (
-        <div key={reply.id}>{reply.content}</div>
+      {question && (
+        <>
+          <h2>{question.title}</h2>
+          <p>{question.content}</p>
+        </>
+      )}
+
+      {replies.map((r) => (
+        <p key={r.id}>{r.content}</p>
       ))}
 
       <textarea
         value={replyContent}
-        onChange={(e) => setReplyInput(e.target.value)}
+        onChange={(e) => setReplyContent(e.target.value)}
       />
-
-      <button onClick={handleReply}>返信する</button>
     </div>
   );
-}
+}*/

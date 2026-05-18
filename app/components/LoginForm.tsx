@@ -43,6 +43,7 @@ export default function LoginForm() {
         return;
       }
       await supabase.auth.getSession(); // ← 追加
+      
 
       router.push("/study");
     } catch (error) {

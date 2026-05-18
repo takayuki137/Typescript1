@@ -1,5 +1,6 @@
 "use client";
 import StudyInput from "@/app/components/StudyInput";
+import RegisterForm from "../components/RegisterForm";
 
 export default function StudyPage() {
   
