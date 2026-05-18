@@ -1,4 +1,4 @@
-/*"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -31,13 +31,13 @@ export default function StudyLogDetail() {
 
     setReplies(data || []);
   };
-
+/*
   useEffect(() => {
     if (!id) return; // ← これ重要
     fetchQuestion();
     fetchReplies();
   }, [id]); // ← params.idじゃなくて id
-
+*/
   const handleReply = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -54,12 +54,8 @@ export default function StudyLogDetail() {
 
   return (
     <div>
-      {question && (
-        <>
-          <h2>{question.title}</h2>
-          <p>{question.content}</p>
-        </>
-      )}
+
+
 
       {replies.map((r) => (
         <p key={r.id}>{r.content}</p>
@@ -71,4 +67,4 @@ export default function StudyLogDetail() {
       />
     </div>
   );
-}*/
+}
