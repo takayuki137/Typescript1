@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation"
+import LoginForm from "@/app/components/LoginForm";
+
 
 type StudyLog = {
   id: string;
@@ -22,6 +25,7 @@ type User = {
 };
 
 export default function StudyBoard() {
+  const router = useRouter()
   const [logs, setLogs] = useState<StudyLog[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [postTitle, setPostTitle] = useState("");
@@ -274,6 +278,18 @@ export default function StudyBoard() {
     fetchQuestions();
   };
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      console.error("ログアウト失敗:", error.message)
+      return
+    }
+    // ログイン画面へ移動
+    router.push("/")
+    
+  }
+
   // ─── useEffect ───────────────────────────────────────────────
 
   useEffect(() => {
@@ -289,13 +305,14 @@ export default function StudyBoard() {
       loadReplies(logs);
     }
   }, [logs]);
+  console.log(user)
+console.log(user?.role)
+console.log(user?.role === "admin")
 
   // ─── JSX ─────────────────────────────────────────────────────
 
   return (
     <div className="p-6 max-w-xl mx-auto">
-
-
       {/* 投稿フォーム */}
       <div className="bg-white shadow rounded-lg p-4 mb-4 mt-4">
         <input
@@ -385,14 +402,14 @@ export default function StudyBoard() {
                   >
                     編集
                   </button>
-                  {user?.role === "ADMIN" && (
+                  {user?.role === "admin" && (
                     <button
                       onClick={() => deletePost(log.id)}
-                      className="rounded bg-red-600 px-3 py-1 text-sm text-white"
+                      className="rounded bg-black-600 px-3 py-1 text-sm "
                     >
                       削除
                     </button>
-                  )}
+                    )}
                 </div>
               </>
             )}
@@ -420,6 +437,15 @@ export default function StudyBoard() {
           </div>
         ))}
       </div>
+
+      {/* 右上固定のログアウトボタン */}
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="fixed top-6 right-6 z-40 rounded-lg bg-red-600 px-4 py-2 font-bold text-white shadow-lg transition hover:bg-red-700"
+      >
+        ログアウト
+      </button>
 
       {/* 右下固定の質問ボタン */}
       <Link
