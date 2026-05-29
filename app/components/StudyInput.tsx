@@ -2,9 +2,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
 import LoginForm from "@/app/components/LoginForm";
-
 
 type StudyLog = {
   id: string;
@@ -25,7 +24,7 @@ type User = {
 };
 
 export default function StudyBoard() {
-  const router = useRouter()
+  const router = useRouter();
   const [logs, setLogs] = useState<StudyLog[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [postTitle, setPostTitle] = useState("");
@@ -44,7 +43,9 @@ export default function StudyBoard() {
   const [qTitle, setQTitle] = useState("");
   const [qContent, setQContent] = useState("");
   const [questions, setQuestions] = useState<any[]>([]);
-  const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
+  const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const togglePostExpand = (postId: string) => {
     setExpandedPostIds((prev) => {
@@ -142,23 +143,41 @@ export default function StudyBoard() {
   };
 
   const getUser = async () => {
-    const { data, error } = await supabase.auth.getUser();
-    console.log("EMAIL:", data?.user?.email);
-    console.log("ID:", data?.user?.id);
+    // auth は「誰がログインしているか（id）」の確認だけに使う
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
 
-    console.log("UID:", data?.user?.id);
-
-    const { data: isAdmin } = await supabase.rpc("is_admin");
-    
-    if (data?.user) {
-      console.log("isAdmin:", isAdmin);
-      setUser({
-        id: data.user.id,
-        email: data.user.email ?? "",
-        role: data.user.role ?? "",
-      });
+    if (!authUser) {
+      console.log("user: 未ログイン");
+      setUser(null);
+      return;
     }
-    console.log("ROLE:", data.user?.role);
+
+    console.log("auth user (id のみ参照):", { id: authUser.id });
+
+    // アプリで使うユーザー情報は public.users から取得（id は auth と同じ）
+    const { data: profile, error } = await supabase
+      .from("users")
+      .select("id, email, role")
+      .eq("id", authUser.id)
+      .single();
+
+    if (error || !profile) {
+      console.error("public.users の取得に失敗:", error?.message);
+      setUser(null);
+      return;
+    }
+
+    console.log("public.users:", profile);
+
+    const appUser = {
+      id: profile.id,
+      email: profile.email,
+      role: profile.role,
+    };
+    console.log("user (state にセット):", appUser);
+    setUser(appUser);
   };
 
   const toggleLike = async (postId: string) => {
@@ -279,16 +298,15 @@ export default function StudyBoard() {
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut();
 
     if (error) {
-      console.error("ログアウト失敗:", error.message)
-      return
+      console.error("ログアウト失敗:", error.message);
+      return;
     }
     // ログイン画面へ移動
-    router.push("/")
-    
-  }
+    router.push("/");
+  };
 
   // ─── useEffect ───────────────────────────────────────────────
 
@@ -305,38 +323,39 @@ export default function StudyBoard() {
       loadReplies(logs);
     }
   }, [logs]);
-  console.log(user)
-console.log(user?.role)
-console.log(user?.role === "admin")
 
   // ─── JSX ─────────────────────────────────────────────────────
 
+  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
+
   return (
     <div className="p-6 max-w-xl mx-auto">
-      {/* 投稿フォーム */}
-      <div className="bg-white shadow rounded-lg p-4 mb-4 mt-4">
-        <input
-          placeholder="タイトルを入力..."
-          value={postTitle}
-          onChange={(e) => setPostTitle(e.target.value)}
-          className="w-full outline-none border-b mb-2 pb-1"
-        />
-        <textarea
-          placeholder="学習内容を入力..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="w-full resize-none outline-none"
-          rows={3}
-        />
-        <div className="flex justify-end mt-2">
-          <button
-            onClick={addLog}
-            className="bg-blue-500 text-white px-3 py-1 rounded"
-          >
-            保存
-          </button>
+      {/* 投稿フォーム（ADMIN のみ） */}
+      {isAdmin && (
+        <div className="bg-white shadow rounded-lg p-4 mb-4 mt-4">
+          <input
+            placeholder="タイトルを入力..."
+            value={postTitle}
+            onChange={(e) => setPostTitle(e.target.value)}
+            className="w-full outline-none border-b mb-2 pb-1"
+          />
+          <textarea
+            placeholder="学習内容を入力..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full resize-none outline-none"
+            rows={3}
+          />
+          <div className="flex justify-end mt-2">
+            <button
+              onClick={addLog}
+              className="bg-blue-500 text-white px-3 py-1 rounded"
+            >
+              保存
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ログ一覧 */}
       <div className="space-y-3">
@@ -395,22 +414,22 @@ console.log(user?.role === "admin")
                 >
                   {expandedPostIds.has(log.id) ? "閉じる" : "続きを見る"}
                 </button>
-                <div className="mt-2 flex gap-2">
-                  <button
-                    onClick={() => startEdit(log.id)}
-                    className="rounded bg-gray-700 px-3 py-1 text-sm text-white"
-                  >
-                    編集
-                  </button>
-                  {user?.role === "admin" && (
+                {isAdmin && (
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      onClick={() => startEdit(log.id)}
+                      className="rounded bg-gray-700 px-3 py-1 text-sm text-white"
+                    >
+                      編集
+                    </button>
                     <button
                       onClick={() => deletePost(log.id)}
-                      className="rounded bg-black-600 px-3 py-1 text-sm "
+                      className="rounded bg-red-600 px-3 py-1 text-sm text-white"
                     >
                       削除
                     </button>
-                    )}
-                </div>
+                  </div>
+                )}
               </>
             )}
             <div className="mt-2 flex items-center gap-2">
