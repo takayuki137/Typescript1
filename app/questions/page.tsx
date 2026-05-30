@@ -4,8 +4,15 @@ import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
+type User = {
+  id: string;
+  email: string;
+  role: string;
+};
+
 export default function Questions() {
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
   const [replies, setReplies] = useState<Record<string, any[]>>({});
   const [qTitle, setQTitle] = useState("");
   const [qContent, setQContent] = useState("");
@@ -13,8 +20,38 @@ export default function Questions() {
   const [questions, setQuestions] = useState<any[]>([]);
 
   useEffect(() => {
+    getUser();
     fetchQuestions();
   }, []);
+
+  const getUser = async () => {
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+
+    if (!authUser) {
+      setUser(null);
+      return;
+    }
+
+    const { data: profile, error } = await supabase
+      .from("users")
+      .select("id, email, role")
+      .eq("id", authUser.id)
+      .single();
+
+    if (error || !profile) {
+      console.error("public.users の取得に失敗:", error?.message);
+      setUser(null);
+      return;
+    }
+
+    setUser({
+      id: profile.id,
+      email: profile.email,
+      role: profile.role,
+    });
+  };
 
   const fetchQuestions = async () => {
     const { data, error } = await supabase
@@ -100,6 +137,8 @@ export default function Questions() {
     });
   };
 
+  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
+
   
 
   return (
@@ -125,14 +164,29 @@ export default function Questions() {
       {questions.map((q) => (
         <div
           key={q.id}
-          className="bg-green-100 p-3 rounded mb-2 cursor-pointer"
-          onClick={() => router.push(`/questions/${q.id}`)}
+          className={`bg-green-100 p-3 rounded mb-2 ${
+            isAdmin ? "cursor-pointer hover:bg-green-200" : "cursor-default"
+          }`}
+          onClick={
+            isAdmin ? () => router.push(`/questions/${q.id}`) : undefined
+          }
         >
-          <p>{q.content}</p>
-          {replies[q.id]?.map((reply) => (
-            <p key={reply.id}>{reply.content}</p>
-          ))}
-        </div>
+        <p className="font-medium">{q.content}</p>
+      
+        {replies[q.id]?.length > 0 && (
+          <div className="mt-2 border-l-4 border-green-400 pl-3">
+            <p className="text-sm text-gray-600 mb-1">
+              返信 {replies[q.id].length}件
+            </p>
+      
+            {replies[q.id].map((reply) => (
+              <p key={reply.id} className="text-sm text-gray-700">
+                ↳ {reply.content}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
       ))}
     </div>
   );
