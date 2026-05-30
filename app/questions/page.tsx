@@ -30,6 +30,23 @@ export default function Questions() {
     setQuestions(data || []);
   };
 
+  const loadQuestionReplies = async (questionList: typeof questions) => {
+    const repliesMap: Record<string, any[]> = {};
+
+    for (const q of questionList) {
+      const data = await fetchReplies(q.id);
+      repliesMap[q.id] = data || [];
+    }
+
+    setReplies(repliesMap);
+  };
+
+  useEffect(() => {
+    if (questions.length > 0) {
+      loadQuestionReplies(questions);
+    }
+  }, [questions]);
+
   const addQuestion = async () => {
     const {
       data: { user },
@@ -112,6 +129,9 @@ export default function Questions() {
           onClick={() => router.push(`/questions/${q.id}`)}
         >
           <p>{q.content}</p>
+          {replies[q.id]?.map((reply) => (
+            <p key={reply.id}>{reply.content}</p>
+          ))}
         </div>
       ))}
     </div>
