@@ -38,7 +38,6 @@ export default function LoginForm() {
       });
 
       if (error) {
-        console.log("送信データ:", values);
         setMessage("ログインに失敗しました。");
         return;
       }
