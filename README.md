@@ -33,6 +33,26 @@ Password: ********
 権限制御	Supabase RLSによるアクセス制御
 権限制御
 SupabaseのRLS（Row Level Security）を利用して、データ単位のアクセス制御を行う設計です。
+```mermaid
+flowchart TD
+
+    Login["ログイン画面<br/>/"]
+    Study["学習ログ画面<br/>/study"]
+
+    Login --> Study
+
+    Study --> Logout["ログアウト"]
+
+    Study --> Logs["学習ログ一覧"]
+
+    Study --> Questions["質問一覧・質問投稿<br/>/questions"]
+
+    Study --> Register["新規登録<br/>（管理者のみ）"]
+
+    Study --> Manage["投稿作成<br/>自身の投稿編集・削除<br/>（管理者のみ）"]
+
+    Questions --> Reply["質問返信<br/>（管理者のみ）"]
+```
 
 学習ログの作成・編集・削除は、RLSにより許可されたユーザーのみ実行可能
 いいねはログインユーザー本人の user_id で作成・削除
@@ -88,4 +108,5 @@ ER図
 
 そこで、自分自身が使いたいサービスとして、学習記録と質問をまとめて管理できるSNS型アプリを開発しています。
 
-今後も機能追加や設計改善を継続していく予定です。
+今後も機能追加や設計改善を継続していく予定
+です。
