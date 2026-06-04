@@ -34,9 +34,18 @@ Password: ********
 質問返信機能	質問に対する返信
 権限制御	Supabase RLSによるアクセス制御
 権限制御
+
 ##　画面一覧
-![画面一覧](docs/loginscreen.png)
+
+![ログイン画面](docs/login.png)
+![新規登録画面](docs/registration.png)
+![ユーザーホーム画面](docs/userhome.png)
+![管理者ホーム画面](docs/adminhome.png)
+![質問一覧投稿画面](docs/question.png)
+![質問返信画面](docs/questionreply.png)
+
 ##　画面遷移図
+
 ```mermaid
 flowchart TD
 
