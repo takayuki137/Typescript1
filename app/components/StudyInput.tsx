@@ -444,18 +444,7 @@ export default function StudyBoard() {
         ))}
       </div>
 
-      {/* 質問一覧 */}
-      <div className="mt-6">
-        <h2 className="font-bold mb-2">質問一覧</h2>
-        {questions.map((q) => (
-          <div key={q.id} className="bg-green-100 p-3 rounded mb-2">
-            <p>{q.content}</p>
-            {replies[q.id]?.map((reply) => (
-              <p key={reply.id}>{reply.content}</p>
-            ))}
-          </div>
-        ))}
-      </div>
+     
 
       {/* 右上固定のログアウトボタン */}
       <button

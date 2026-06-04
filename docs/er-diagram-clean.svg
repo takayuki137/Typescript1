@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1000" viewBox="0 0 1720 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Clean ER diagram for Supabase database schema</title>
+  <desc id="desc">A polished entity relationship diagram showing Users to Posts to Likes and Users to Questions to QuestionReplies.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .grid { stroke: #e2e8f0; stroke-width: 1; opacity: .55; }
+      .title { font: 800 44px "Inter", "Segoe UI", Arial, sans-serif; fill: #0f172a; letter-spacing: 0; }
+      .subtitle { font: 500 22px "Inter", "Segoe UI", Arial, sans-serif; fill: #475569; }
+      .card { fill: #ffffff; stroke: #dbe4ee; stroke-width: 2; rx: 18; filter: url(#shadow); }
+      .card-accent { fill: #eff6ff; }
+      .card-accent-green { fill: #ecfdf5; }
+      .card-accent-amber { fill: #fffbeb; }
+      .entity { font: 800 28px "Inter", "Segoe UI", Arial, sans-serif; fill: #0f172a; }
+      .table-name { font: 600 15px "Inter", "Segoe UI", Arial, sans-serif; fill: #64748b; letter-spacing: .4px; }
+      .field { font: 500 18px "Inter", "Segoe UI", Arial, sans-serif; fill: #334155; }
+      .type { font: 500 15px "Inter", "Segoe UI", Arial, sans-serif; fill: #64748b; }
+      .pk { fill: #2563eb; font: 800 13px "Inter", "Segoe UI", Arial, sans-serif; }
+      .fk { fill: #16a34a; font: 800 13px "Inter", "Segoe UI", Arial, sans-serif; }
+      .line { stroke: #2563eb; stroke-width: 4; fill: none; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
+      .line-muted { stroke: #94a3b8; stroke-width: 3; fill: none; marker-end: url(#arrow-muted); stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 9 9; }
+      .rel-label { fill: #ffffff; stroke: #bfdbfe; stroke-width: 1.5; rx: 14; }
+      .rel-text { font: 800 16px "Inter", "Segoe UI", Arial, sans-serif; fill: #1d4ed8; }
+      .note { font: 600 18px "Inter", "Segoe UI", Arial, sans-serif; fill: #475569; }
+      .legend-title { font: 800 18px "Inter", "Segoe UI", Arial, sans-serif; fill: #0f172a; }
+      .legend { font: 600 15px "Inter", "Segoe UI", Arial, sans-serif; fill: #475569; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1720" height="1000"/>
+  <g>
+    <path class="grid" d="M80 140H1640M80 220H1640M80 300H1640M80 380H1640M80 460H1640M80 540H1640M80 620H1640M80 700H1640M80 780H1640M80 860H1640"/>
+    <path class="grid" d="M120 120V900M220 120V900M320 120V900M420 120V900M520 120V900M620 120V900M720 120V900M820 120V900M920 120V900M1020 120V900M1120 120V900M1220 120V900M1320 120V900M1420 120V900M1520 120V900M1620 120V900"/>
+  </g>
+
+  <text class="title" x="80" y="82">ER Diagram</text>
+  <text class="subtitle" x="80" y="118">Supabase schema overview for portfolio interview explanation</text>
+
+  <g transform="translate(74 834)">
+    <rect class="card" width="460" height="84" rx="16"/>
+    <text class="legend-title" x="24" y="32">Reading Guide</text>
+    <circle cx="28" cy="57" r="7" fill="#2563eb"/>
+    <text class="legend" x="46" y="63">PK = primary key</text>
+    <circle cx="206" cy="57" r="7" fill="#16a34a"/>
+    <text class="legend" x="224" y="63">FK = foreign key</text>
+    <path d="M338 58H410" class="line" marker-end="url(#arrow)"/>
+    <text class="legend" x="420" y="63">1:N</text>
+  </g>
+
+  <g transform="translate(74 220)">
+    <rect class="card" width="270" height="172" rx="18"/>
+    <rect class="card-accent" width="270" height="60" rx="18"/>
+    <text class="entity" x="24" y="38">Auth Users</text>
+    <text class="table-name" x="24" y="82">auth.users</text>
+    <text class="pk" x="24" y="118">PK</text><text class="field" x="60" y="118">id</text><text class="type" x="206" y="118">uuid</text>
+    <text class="note" x="24" y="150">Supabase auth account</text>
+  </g>
+
+  <g transform="translate(450 190)">
+    <rect class="card" width="300" height="252" rx="18"/>
+    <rect class="card-accent" width="300" height="66" rx="18"/>
+    <text class="entity" x="24" y="42">Users</text>
+    <text class="table-name" x="24" y="90">public.users</text>
+    <text class="pk" x="24" y="126">PK</text><text class="field" x="62" y="126">id</text><text class="type" x="230" y="126">uuid</text>
+    <text class="field" x="62" y="160">email</text><text class="type" x="226" y="160">text</text>
+    <text class="field" x="62" y="194">role</text><text class="type" x="226" y="194">text</text>
+    <text class="field" x="62" y="228">created_at</text><text class="type" x="188" y="228">timestamp</text>
+  </g>
+
+  <g transform="translate(910 118)">
+    <rect class="card" width="320" height="292" rx="18"/>
+    <rect class="card-accent-green" width="320" height="66" rx="18"/>
+    <text class="entity" x="24" y="42">Posts</text>
+    <text class="table-name" x="24" y="90">public.posts</text>
+    <text class="pk" x="24" y="126">PK</text><text class="field" x="62" y="126">id</text><text class="type" x="250" y="126">uuid</text>
+    <text class="field" x="62" y="160">title</text><text class="type" x="250" y="160">text</text>
+    <text class="field" x="62" y="194">content</text><text class="type" x="250" y="194">text</text>
+    <text class="fk" x="24" y="228">FK</text><text class="field" x="62" y="228">user_id</text><text class="type" x="250" y="228">uuid</text>
+    <text class="field" x="62" y="262">created_at</text><text class="type" x="210" y="262">timestamp</text>
+  </g>
+
+  <g transform="translate(1320 120)">
+    <rect class="card" width="300" height="292" rx="18"/>
+    <rect class="card-accent-amber" width="300" height="66" rx="18"/>
+    <text class="entity" x="24" y="42">Likes</text>
+    <text class="table-name" x="24" y="90">public.likes</text>
+    <text class="pk" x="24" y="126">PK</text><text class="field" x="62" y="126">id</text><text class="type" x="230" y="126">uuid</text>
+    <text class="fk" x="24" y="160">FK</text><text class="field" x="62" y="160">user_id</text><text class="type" x="230" y="160">uuid</text>
+    <text class="fk" x="24" y="194">FK</text><text class="field" x="62" y="194">post_id</text><text class="type" x="230" y="194">uuid</text>
+    <text class="field" x="62" y="228">created_at</text><text class="type" x="188" y="228">timestamp</text>
+    <text class="field" x="62" y="262">new_user_id</text><text class="type" x="230" y="262">uuid</text>
+  </g>
+
+  <g transform="translate(910 560)">
+    <rect class="card" width="320" height="326" rx="18"/>
+    <rect class="card-accent-green" width="320" height="66" rx="18"/>
+    <text class="entity" x="24" y="42">Questions</text>
+    <text class="table-name" x="24" y="90">public.questions</text>
+    <text class="pk" x="24" y="126">PK</text><text class="field" x="62" y="126">id</text><text class="type" x="250" y="126">uuid</text>
+    <text class="fk" x="24" y="160">FK</text><text class="field" x="62" y="160">user_id</text><text class="type" x="250" y="160">uuid</text>
+    <text class="field" x="62" y="194">title</text><text class="type" x="250" y="194">text</text>
+    <text class="field" x="62" y="228">content</text><text class="type" x="250" y="228">text</text>
+    <text class="field" x="62" y="262">status</text><text class="type" x="250" y="262">text</text>
+    <text class="field" x="62" y="296">created_at</text><text class="type" x="210" y="296">timestamp</text>
+  </g>
+
+  <g transform="translate(1320 585)">
+    <rect class="card" width="340" height="258" rx="18"/>
+    <rect class="card-accent-amber" width="340" height="66" rx="18"/>
+    <text class="entity" x="24" y="42">QuestionReplies</text>
+    <text class="table-name" x="24" y="90">public.question_replies</text>
+    <text class="pk" x="24" y="126">PK</text><text class="field" x="62" y="126">id</text><text class="type" x="270" y="126">uuid</text>
+    <text class="fk" x="24" y="160">FK</text><text class="field" x="62" y="160">question_id</text><text class="type" x="270" y="160">uuid</text>
+    <text class="fk" x="24" y="194">FK</text><text class="field" x="62" y="194">user_id</text><text class="type" x="270" y="194">uuid</text>
+    <text class="field" x="62" y="228">content</text><text class="type" x="270" y="228">text</text>
+  </g>
+
+  <path class="line-muted" d="M344 306H450"/>
+  <rect class="rel-label" x="364" y="280" width="78" height="30"/>
+  <text class="rel-text" x="381" y="301">1:1</text>
+
+  <path class="line" d="M750 274 C810 274 830 254 910 254"/>
+  <rect class="rel-label" x="785" y="230" width="92" height="32"/>
+  <text class="rel-text" x="807" y="252">1:N</text>
+  <text class="note" x="776" y="288">creates posts</text>
+
+  <path class="line" d="M1230 254H1320"/>
+  <rect class="rel-label" x="1252" y="218" width="92" height="32"/>
+  <text class="rel-text" x="1274" y="240">1:N</text>
+  <text class="note" x="1240" y="288">receives likes</text>
+
+  <path class="line" d="M750 342 C830 342 825 712 910 712"/>
+  <rect class="rel-label" x="806" y="493" width="92" height="32"/>
+  <text class="rel-text" x="828" y="515">1:N</text>
+  <text class="note" x="760" y="548">asks questions</text>
+
+  <path class="line" d="M1230 722H1320"/>
+  <rect class="rel-label" x="1252" y="684" width="92" height="32"/>
+  <text class="rel-text" x="1274" y="706">1:N</text>
+  <text class="note" x="1238" y="756">has replies</text>
+
+  <path class="line-muted" d="M600 442 C600 512 1460 512 1460 585"/>
+  <rect class="rel-label" x="1004" y="486" width="92" height="32"/>
+  <text class="rel-text" x="1026" y="508">1:N</text>
+  <text class="note" x="1108" y="508">reply author</text>
+
+  <path class="line-muted" d="M600 442 C600 500 1448 500 1448 412"/>
+  <rect class="rel-label" x="1016" y="438" width="92" height="32"/>
+  <text class="rel-text" x="1038" y="460">1:N</text>
+  <text class="note" x="1118" y="460">like user</text>
+
+  <g transform="translate(604 40)">
+    <rect x="0" y="0" width="862" height="54" rx="27" fill="#e0f2fe" stroke="#bae6fd" stroke-width="2"/>
+    <text x="32" y="35" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="19" font-weight="800" fill="#0369a1">
+      Main flows: Users -> Posts -> Likes / Users -> Questions -> QuestionReplies
+    </text>
+  </g>
+</svg>

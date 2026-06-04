@@ -1,69 +1,82 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function RegisterForm() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
 
-        const res = await fetch("/api/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        });
-        const data = await res.json();
+    if (!email || !password) {
+      setMessage("メールとパスワードを入力してください。");
+      return;
+    }
 
-        if (!res.ok) {
-            setMessage(data.message ?? "エラーが発生しました");
-            return;
-        }
+    setIsSubmitting(true);
+    setMessage("");
 
-        setMessage("登録成功！（メール確認してね）");
-    };
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+      });
 
-    return (
-        <form
-            onSubmit={handleSubmit}
-            className="mx-auto mt-16 flex w-full max-w-sm flex-col gap-4 
-             rounded-xl border shadow-md p-6 bg-white"
-        >
-            <h1 className="text-xl font-semibold">新規登録</h1>
+      if (error) {
+        setMessage(error.message);
+        return;
+      }
 
-            {/* メール */}
-            <label className="flex flex-col gap-1 text-sm font-medium">
-                メールアドレス
-                <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="rounded-md border-2 border-gray-300 px-3 py-2 
-                 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20
-                 transition"
-                />
-            </label>
+      setMessage("登録成功！（メール確認してね）");
+      setEmail("");
+      setPassword("");
+    } catch {
+      setMessage("登録エラーが発生しました。");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-            {/* パスワード */}
-            <label className="flex flex-col gap-1 text-sm font-medium">
-                パスワード
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="rounded-md border-2 border-gray-300 px-3 py-2 
-                 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20
-                 transition"
-                />
-            </label>
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="mx-auto mt-16 flex w-full max-w-sm flex-col gap-4 rounded-xl border bg-white p-6 shadow-md"
+    >
+      <h1 className="text-xl font-semibold">新規登録</h1>
 
-            <button className="rounded bg-black text-white py-2">
-                登録
-            </button>
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        メールアドレス
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="rounded-md border-2 border-gray-300 px-3 py-2 transition focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+        />
+      </label>
 
-            {message && <p className="text-sm">{message}</p>}
-        </form>
-    );
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        パスワード
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="rounded-md border-2 border-gray-300 px-3 py-2 transition focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
+        />
+      </label>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="rounded bg-black py-2 text-white disabled:opacity-50"
+      >
+        {isSubmitting ? "登録中..." : "登録"}
+      </button>
+
+      {message && <p className="text-sm">{message}</p>}
+    </form>
+  );
 }

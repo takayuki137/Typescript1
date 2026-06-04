@@ -1,4 +1,4 @@
-# Learning Log SNS
+# 学習記録アプリ
 
 ## サービス概要
 
@@ -19,11 +19,13 @@ https://xxxxx.example.com
 
 Email: test@example.com
 Password: ********
-ターゲット
+
+##　ターゲット
+
 プログラミングを独学している方
 未経験からエンジニアを目指している方
 学習記録を継続したい方
-主な機能
+機能一覧
 機能	内容
 認証機能	Supabase Authによるログイン・新規登録
 学習ログ投稿	学習内容の投稿・編集・削除
@@ -32,7 +34,9 @@ Password: ********
 質問返信機能	質問に対する返信
 権限制御	Supabase RLSによるアクセス制御
 権限制御
-SupabaseのRLS（Row Level Security）を利用して、データ単位のアクセス制御を行う設計です。
+##　画面一覧
+![画面一覧](docs/loginscreen.png)
+##　画面遷移図
 ```mermaid
 flowchart TD
 
@@ -60,7 +64,7 @@ flowchart TD
 質問への返信は管理者のみ投稿可能
 RLSポリシーはSupabase側で管理しており、今後はSQLファイルとしてリポジトリ管理する予定です。
 
-使用技術
+##　使用技術
 フロントエンド
 Next.js App Router
 React
@@ -86,13 +90,53 @@ posts	学習ログ投稿
 likes	投稿へのいいね
 questions	質問投稿
 question_replies	質問への返信
-ER図
+##　ER図
 準備中です。
 
-画面遷移図
+##　画面遷移図
 準備中です。
 
-今後の改善予定
+##　認証・認可設計
+一般ユーザー
+├─ ログインログアウト
+├─ 記事の閲覧
+├─ 質問作成
+└─ いいね
+
+管理者
+├─ログインログアウト
+├─記事の作成・閲覧・編集・削除
+├─ 質問への回答
+└─ 新規アカウントの作成
+
+##　RLS（Row Level Security）設計
+
+本アプリでは Supabase の RLS を利用し、データベースレベルでアクセス制御を実施している。
+
+posts
+操作	権限
+SELECT	全ユーザー
+INSERT	管理者のみ
+UPDATE	投稿者本人のみ
+DELETE	投稿者本人のみ
+likes
+操作	権限
+SELECT	全ユーザー
+INSERT	ログインユーザー本人のみ
+DELETE	作成者本人のみ
+questions
+操作	権限
+SELECT	質問作成者本人または管理者
+INSERT	ログインユーザー本人のみ
+question_replies
+操作	権限
+SELECT	全ユーザー
+INSERT	管理者のみ
+users
+操作	権限
+SELECT	自分のユーザー情報のみ
+
+## 改善予定
  RLSポリシーをSQLファイルとしてリポジトリ管理する
  検索機能
  タグ機能
