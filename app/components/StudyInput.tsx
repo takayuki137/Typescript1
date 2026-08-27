@@ -9,7 +9,7 @@ type StudyLog = {
   id: string;
   title: string;
   content: string;
-  createdAt: string;
+  created_at: string;
 };
 
 type PostComment = {
@@ -66,6 +66,9 @@ export default function StudyBoard() {
       return;
     }
     setLogs(data || []);
+    //console.log("Fetched logs:", data);
+
+
   };
 
   const fetchQuestions = async () => {
@@ -398,14 +401,19 @@ export default function StudyBoard() {
               </div>
             ) : (
               <>
-                <p className="font-bold text-base mb-1">{log.createdAt}</p>
+                <p className="text-sm text-gray-500 mb-1">
+                  {new Date(log.created_at).toLocaleDateString("ja-JP", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
                 <p className="font-bold text-base mb-1">{log.title}</p>
                 <p
-                  className={`whitespace-pre-wrap ${
-                    expandedPostIds.has(log.id)
+                  className={`whitespace-pre-wrap ${expandedPostIds.has(log.id)
                       ? ""
                       : "line-clamp-3 overflow-hidden"
-                  }`}
+                    }`}
                 >
                   {log.content}
                 </p>
@@ -446,7 +454,7 @@ export default function StudyBoard() {
         ))}
       </div>
 
-     
+
 
       {/* 右上固定のログアウトボタン */}
       <button
