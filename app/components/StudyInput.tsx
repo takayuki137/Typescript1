@@ -9,6 +9,7 @@ type StudyLog = {
   id: string;
   title: string;
   content: string;
+  createdAt: string;
 };
 
 type PostComment = {
@@ -397,6 +398,7 @@ export default function StudyBoard() {
               </div>
             ) : (
               <>
+                <p className="font-bold text-base mb-1">{log.createdAt}</p>
                 <p className="font-bold text-base mb-1">{log.title}</p>
                 <p
                   className={`whitespace-pre-wrap ${
