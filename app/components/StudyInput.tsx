@@ -60,7 +60,7 @@ export default function StudyBoard() {
   // ─── 関数定義（useEffectより全部上） ───────────────────────
 
   const fetchLogs = async () => {
-    const { data, error } = await supabase.from("posts").select("*");
+    const { data, error } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
     if (error) {
       console.error(error);
       return;
