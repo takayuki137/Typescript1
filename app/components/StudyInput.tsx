@@ -4,6 +4,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import LoginForm from "@/app/components/LoginForm";
+import ScrollToTopButton from "@/app/components/ScrollToTopButton";
 
 type StudyLog = {
   id: string;
@@ -334,6 +335,8 @@ export default function StudyBoard() {
 
   return (
     <div className="p-6 max-w-xl mx-auto">
+        
+    <ScrollToTopButton />
       {/* 投稿フォーム（ADMIN のみ） */}
       {isAdmin && (
         <div className="bg-white shadow rounded-lg p-4 mb-4 mt-4">
